@@ -1,0 +1,108 @@
+
+> trustlab@0.1.0 verify
+> npm run build && npm run test
+
+
+> trustlab@0.1.0 build
+> vite build
+
+vite v5.4.21 building for production...
+transforming...
+✓ 25 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  0.36 kB │ gzip:  0.25 kB
+dist/assets/index-ByM1vbtW.js  179.49 kB │ gzip: 55.97 kB
+✓ built in 310ms
+
+> trustlab@0.1.0 test
+> node --test tests/*.test.js
+
+TAP version 13
+# Subtest: GET /api/health returns service status
+ok 1 - GET /api/health returns service status
+  ---
+  duration_ms: 19.141875
+  type: 'test'
+  ...
+# Subtest: POST /api/log-event validates payload
+ok 2 - POST /api/log-event validates payload
+  ---
+  duration_ms: 9.829458
+  type: 'test'
+  ...
+# Subtest: POST /api/log-event persists enriched event
+ok 3 - POST /api/log-event persists enriched event
+  ---
+  duration_ms: 2.733708
+  type: 'test'
+  ...
+# Subtest: GET /api/events.json and /api/events.csv return exported events
+ok 4 - GET /api/events.json and /api/events.csv return exported events
+  ---
+  duration_ms: 5.330708
+  type: 'test'
+  ...
+# Subtest: GET /api/quality-report.json returns session summary
+ok 5 - GET /api/quality-report.json returns session summary
+  ---
+  duration_ms: 5.176792
+  type: 'test'
+  ...
+# Subtest: validateEvent accepts valid event
+ok 6 - validateEvent accepts valid event
+  ---
+  duration_ms: 0.573375
+  type: 'test'
+  ...
+# Subtest: validateEvent rejects missing required field
+ok 7 - validateEvent rejects missing required field
+  ---
+  duration_ms: 0.09225
+  type: 'test'
+  ...
+# Subtest: validateEvent rejects malformed values
+ok 8 - validateEvent rejects malformed values
+  ---
+  duration_ms: 0.362375
+  type: 'test'
+  ...
+# Subtest: qualityForEvent flags attention-check and latency anomalies
+ok 9 - qualityForEvent flags attention-check and latency anomalies
+  ---
+  duration_ms: 0.090083
+  type: 'test'
+  ...
+# Subtest: toCsv emits header and row values
+ok 10 - toCsv emits header and row values
+  ---
+  duration_ms: 0.093667
+  type: 'test'
+  ...
+# Subtest: summarizeSessions marks completed/dropout and include decision
+ok 11 - summarizeSessions marks completed/dropout and include decision
+  ---
+  duration_ms: 0.145833
+  type: 'test'
+  ...
+# Subtest: file store appends and reads events
+ok 12 - file store appends and reads events
+  ---
+  duration_ms: 4.568667
+  type: 'test'
+  ...
+# Subtest: file store ignores malformed JSON lines
+ok 13 - file store ignores malformed JSON lines
+  ---
+  duration_ms: 1.605208
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 151.581084

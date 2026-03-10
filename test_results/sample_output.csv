@@ -1,0 +1,5 @@
+participant_id,condition,decision,timestamp,latency_ms
+P-0001,A,accept,2026-03-10T16:00:12.341Z,1842
+P-0002,B,override,2026-03-10T16:01:48.915Z,2679
+P-0003,A,accept,2026-03-10T16:03:05.203Z,1398
+P-0004,B,override,2026-03-10T16:04:39.557Z,3121
