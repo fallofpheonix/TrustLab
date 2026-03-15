@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  trustlab:
+    build: .
+    ports:
+      - "${PORT:-8003}:8003"
+    volumes:
+      - trustlab-data:/data
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "8003"
+      DATA_DIR: "/data"
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+      STORAGE_BACKEND: "${STORAGE_BACKEND:-file}"
+      RATE_LIMIT_MAX_REQUESTS: "${RATE_LIMIT_MAX_REQUESTS:-100}"
+      RATE_LIMIT_WINDOW_SECONDS: "${RATE_LIMIT_WINDOW_SECONDS:-60}"
+    restart: unless-stopped
+
+volumes:
+  trustlab-data:

@@ -1,3 +1,5 @@
 participant_id,condition_id,assistant_name,assistant_tone,confidence_frame,decision,decision_matches_recommendation,recommendation_id,recommended_option,timestamp,latency_ms,user_agent
 P-DEMO001,A,Astra,supportive,high,accept,true,rec-001,Option A,2026-03-14T09:10:11.000Z,1834,sample-generator
 P-DEMO002,B,System Advisor,formal,neutral,reject,false,rec-001,Option A,2026-03-14T09:11:02.000Z,2641,sample-generator
+P-AAAAAAAA,A,Astra,supportive,high,accept,true,rec-001,Option A,2026-03-15T19:22:36.950829+00:00,1500,curl/8.5.0
+P-5BUBS4V3,A,Astra,supportive,high,accept,true,rec-001,Option A,2026-03-15T19:23:22.398Z,7197,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.0.0 Safari/537.36"

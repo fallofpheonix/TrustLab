@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TrustLab Admin</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 16px; }
+      .metric-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; text-align: center; }
+      .metric-card .value { font-size: 2rem; font-weight: bold; color: var(--accent); }
+      .metric-card .label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+      .dist-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--line); }
+      pre { background: #f0ece4; padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 0.85rem; }
+      .refresh-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 20px; cursor: pointer; font-size: 0.9rem; }
+      .refresh-btn:hover { background: var(--accent-dark); }
+      .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; margin-right: 6px; }
+      .status-dot.error { background: #ef4444; }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="panel intro">
+        <p class="eyebrow">TrustLab</p>
+        <h1>Admin Dashboard</h1>
+        <p class="lede">Live platform health and event metrics.</p>
+        <div style="display:flex;gap:12px;align-items:center;margin-top:12px;">
+          <button class="refresh-btn" id="refresh-btn">Refresh</button>
+          <span id="health-status"></span>
+        </div>
+      </section>
+
+      <section class="panel" id="metrics-panel" style="margin-top:20px;">
+        <h2 style="margin:0 0 8px;">Event Metrics</h2>
+        <div class="metric-grid" id="metric-grid"></div>
+
+        <h3 style="margin:20px 0 8px;">Condition Distribution</h3>
+        <div id="condition-dist"></div>
+
+        <h3 style="margin:20px 0 8px;">Raw Metrics</h3>
+        <pre id="raw-metrics"></pre>
+      </section>
+    </main>
+
+    <script type="module">
+      async function loadMetrics() {
+        const healthEl = document.getElementById("health-status");
+        const gridEl = document.getElementById("metric-grid");
+        const distEl = document.getElementById("condition-dist");
+        const rawEl = document.getElementById("raw-metrics");
+
+        try {
+          const [healthRes, metricsRes] = await Promise.all([
+            fetch("/api/health"),
+            fetch("/api/metrics"),
+          ]);
+          const health = await healthRes.json();
+          const metrics = await metricsRes.json();
+
+          const dotClass = health.status === "ok" ? "" : " error";
+          healthEl.innerHTML = `<span class="status-dot${dotClass}"></span>Server: ${health.status}`;
+
+          gridEl.innerHTML = `
+            <div class="metric-card"><div class="value">${metrics.total_events}</div><div class="label">Total Events</div></div>
+            <div class="metric-card"><div class="value">${metrics.events_per_second.toFixed(3)}</div><div class="label">Events / sec</div></div>
+            <div class="metric-card"><div class="value">${metrics.latency_ms.mean.toFixed(0)} ms</div><div class="label">Mean Latency</div></div>
+            <div class="metric-card"><div class="value">${metrics.latency_ms.p50.toFixed(0)} ms</div><div class="label">p50 Latency</div></div>
+            <div class="metric-card"><div class="value">${metrics.latency_ms.p95.toFixed(0)} ms</div><div class="label">p95 Latency</div></div>
+            <div class="metric-card"><div class="value">${metrics.uptime_seconds.toFixed(0)} s</div><div class="label">Uptime</div></div>
+          `;
+
+          const dist = metrics.condition_distribution || {};
+          distEl.innerHTML = Object.entries(dist).length
+            ? Object.entries(dist).map(([k, v]) => `<div class="dist-row"><strong>${k}</strong><span>${v} events</span></div>`).join("")
+            : "<p style='color:var(--muted)'>No events yet.</p>";
+
+          rawEl.textContent = JSON.stringify(metrics, null, 2);
+        } catch (err) {
+          healthEl.innerHTML = `<span class="status-dot error"></span>Error: ${err.message}`;
+        }
+      }
+
+      loadMetrics();
+      document.getElementById("refresh-btn").addEventListener("click", loadMetrics);
+    </script>
+  </body>
+</html>
