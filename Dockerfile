@@ -4,7 +4,9 @@ WORKDIR /app
 
 # Copy source files
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN grep -vE '^(pytest|pytest-)\b' requirements.txt > requirements.runtime.txt \
+    && pip install --no-cache-dir -r requirements.runtime.txt \
+    && rm requirements.runtime.txt
 
 COPY app.py ./
 COPY src/ ./src/
