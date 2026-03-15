@@ -54,11 +54,15 @@ def run_server(host: str, port: int, data_dir: Path) -> None:
     handler = build_handler(ctx)
     server = ThreadingHTTPServer((host, port), handler)
 
-    jsonl_path = data_dir / "events.jsonl"
-    csv_path = data_dir / "events.csv"
     print(f"Serving task3 prototype on http://{host}:{port}")
-    print(f"Logging JSONL to {jsonl_path}")
-    print(f"Logging CSV to   {csv_path}")
+    if Config.STORAGE_BACKEND == "sqlite":
+        db_path = data_dir / "events.db"
+        print(f"Logging events to SQLite database at {db_path}")
+    else:
+        jsonl_path = data_dir / "events.jsonl"
+        csv_path = data_dir / "events.csv"
+        print(f"Logging JSONL to {jsonl_path}")
+        print(f"Logging CSV to   {csv_path}")
     print(f"Storage backend: {Config.STORAGE_BACKEND}")
     try:
         server.serve_forever()
