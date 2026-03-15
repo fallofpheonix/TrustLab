@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -31,6 +32,8 @@ class AppContext:
     rate_limiter: RateLimiter
     metrics: MetricsTracker
 
+
+PARTICIPANT_ID_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 
 def build_handler(ctx: AppContext) -> type[SimpleHTTPRequestHandler]:
     """Factory that returns a configured request handler class."""
@@ -181,6 +184,12 @@ def build_handler(ctx: AppContext) -> type[SimpleHTTPRequestHandler]:
                 )
                 return
             participant_id = pid_list[0]
+            if not PARTICIPANT_ID_RE.fullmatch(participant_id):
+                self._send_json(
+                    {"status": "error", "message": "invalid participant_id format"},
+                    status=HTTPStatus.BAD_REQUEST,
+                )
+                return
             condition = ctx.assignment_service.assign(participant_id)
             self._send_json(
                 {"participant_id": participant_id, "condition": condition}
