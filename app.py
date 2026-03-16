@@ -17,7 +17,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run the task3 trust-calibration prototype.")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", default=8003, type=int)
-    parser.add_argument("--data-dir", default=str(PROJECT_ROOT / "out"))
+    parser.add_argument("--data-dir", default=str(PROJECT_ROOT / "data_store"))
     return parser.parse_args()
 
 

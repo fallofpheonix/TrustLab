@@ -151,25 +151,30 @@ def build_handler(ctx: AppContext) -> type[SimpleHTTPRequestHandler]:
                 )
                 return
 
-            ctx.store.append(event.to_dict())
-            ctx.metrics.record_event(event.condition_id, event.latency_ms)
+            try:
+                ctx.store.append(event.to_dict())
+                ctx.metrics.record_event(event.condition_id, event.latency_ms)
 
-            # Update or create session for multi-trial support.
-            sessions = ctx.session_service.get_by_participant(event.participant_id)
-            active = next(
-                (s for s in sessions if s.condition_id == event.condition_id and s.completed_at is None),
-                None,
-            )
-            if active is None:
-                active = ctx.session_service.create(event.participant_id, event.condition_id)
-            active.add_trial(
-                event.recommendation_id,
-                event.decision,
-                event.latency_ms,
-                event.timestamp,
-            )
-
-            self._send_json({"status": "ok", "session_id": active.session_id})
+                # Update or create session for multi-trial support.
+                sessions = ctx.session_service.get_by_participant(event.participant_id)
+                active = next(
+                    (s for s in sessions if s.condition_id == event.condition_id and s.completed_at is None),
+                    None,
+                )
+                if active is None:
+                    active = ctx.session_service.create(event.participant_id, event.condition_id)
+                active.add_trial(
+                    event.recommendation_id,
+                    event.decision,
+                    event.latency_ms,
+                    event.timestamp,
+                )
+                self._send_json({"status": "ok", "session_id": active.session_id})
+            except Exception as exc:
+                self._send_json(
+                    {"status": "error", "message": f"internal server error: {exc}"},
+                    status=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
 
         # ------------------------------------------------------------------ #
         # Helpers

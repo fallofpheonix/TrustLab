@@ -11,7 +11,7 @@ class Config:
 
     HOST: str = os.environ.get("HOST", "127.0.0.1")
     PORT: int = int(os.environ.get("PORT", "8003"))
-    DATA_DIR: Path = Path(os.environ.get("DATA_DIR", str(PROJECT_ROOT / "out")))
+    DATA_DIR: Path = Path(os.environ.get("DATA_DIR", str(PROJECT_ROOT / "data_store")))
     LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
     STORAGE_BACKEND: str = os.environ.get("STORAGE_BACKEND", "file")  # "file" or "sqlite"
 
