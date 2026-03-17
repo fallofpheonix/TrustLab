@@ -1,5 +1,5 @@
-# No third-party runtime dependencies required.
-# The prototype runs on Python standard library only.
+# No third-party runtime dependencies — stdlib only.
 
-# Development / testing
+# Dev / test
 pytest>=7.0
+ruff>=0.4

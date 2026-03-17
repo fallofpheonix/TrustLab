@@ -21,11 +21,18 @@ ENV/
 .coverage
 htmlcov/
 *.xml
+.ruff_cache/
 
 # Data output (do not commit real experiment data)
 out/*.jsonl
 out/*.csv
 out/*.db
+data_store/*.jsonl
+data_store/*.csv
+data_store/*.db
+
+# Local environment — never commit real values
+.env
 
 # IDE
 .idea/
