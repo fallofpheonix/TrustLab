@@ -1,42 +1,34 @@
-# Task 3 Overview
+# TrustLab
 
-## Assignment
+A lightweight research platform for running trust-calibration A/B experiments. Participants see an AI assistant recommendation under one of several condition variants (name, tone, confidence framing) and decide whether to accept it. All behavioral events and latencies are logged for offline analysis.
 
-Task 3 is a trust-calibration experimentation platform. The screening task is a minimal web prototype with A/B cue variation, a single recommendation acceptance decision, and JSON/CSV logging of participant behavior and latency.
+## What it does
 
-## Current Repository State
+- Serves a browser-based task from `web/`
+- Deterministically assigns each participant to a condition via SHA-256 hash
+- Accepts `POST /api/events` payloads, validates them, and persists to JSONL+CSV (or SQLite)
+- Exposes `/api/conditions`, `/api/assign`, `/api/health`, and `/api/metrics`
+- Per-IP sliding-window rate limiting and basic server metrics out of the box
 
-- Proposal, problem statement, roadmap, and submission-guideline docs exist.
-- A runnable local prototype now exists in `task3/app.py`.
-- File-backed logging exists in `task3/src/trust_server.py`.
-- Condition configuration exists in `task3/config/conditions.json`.
-- Static frontend assets exist in `task3/web/`.
-- Sample outputs exist in `task3/out/events.jsonl` and `task3/out/events.csv`.
-- A lightweight analysis helper exists in `task3/analysis/analyze_events.py`.
+## Structure
 
-## Current Implementation
-
-- Deterministic participant assignment:
-  participant IDs are generated locally and persisted in `localStorage`, or can be injected with `?participant_id=...`.
-- Deterministic condition assignment:
-  the client hashes `participant_id` and maps it onto `task3/config/conditions.json`.
-- Logging schema:
-  `participant_id`, `condition_id`, `assistant_name`, `assistant_tone`, `confidence_frame`, `decision`, `decision_matches_recommendation`, `recommendation_id`, `recommended_option`, `timestamp`, `latency_ms`, `user_agent`.
-- Backend:
-  Python standard-library HTTP server with `/api/conditions` and `/api/events`.
-- Persistence:
-  append-only `events.jsonl` plus synchronized `events.csv`.
+```
+src/trustlab/
+├── api/          HTTP handler + middleware (CORS, rate-limit, metrics)
+├── config/       Environment-driven settings
+├── core/         Domain types: EventRecord, ParticipantSession, validation
+├── services/     ConditionAssignmentService, SessionRegistry
+├── storage/      EventStore ABC + FileEventStore / SQLiteEventStore
+└── utils/        condition_loader
+```
 
 ## Setup
 
 ```bash
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env   # edit if needed
 ```
-
-`requirements.txt` is intentionally empty of third-party runtime dependencies; the prototype uses Python standard library only.
 
 ## Run
 
@@ -44,31 +36,34 @@ python -m pip install -r requirements.txt
 python app.py --port 8003
 ```
 
-Then open:
+Open `http://127.0.0.1:8003`. For a fixed participant (reproducible condition assignment):
 
-```text
-http://127.0.0.1:8003
+```
+http://127.0.0.1:8003/?participant_id=P-DEMO0001
 ```
 
-Optional fixed participant for reproducible A/B assignment:
+### Docker
 
-```text
-http://127.0.0.1:8003/?participant_id=P-DEMO001
+```bash
+docker compose up
 ```
 
-## Outputs
+## Tests
 
-- Log files:
-  `task3/out/events.jsonl`
-  `task3/out/events.csv`
-- Analysis helper:
+```bash
+pytest
+```
+
+## Key decisions
+
+- **No framework**: stdlib `ThreadingHTTPServer` keeps the dependency list empty at runtime and is sufficient for pilot-scale load.
+- **Deterministic assignment**: SHA-256 of `participant_id` gives stable, reproducible condition mapping without a database.
+- **Dual-format logging**: JSONL is the primary store (easy to stream); CSV is written in parallel for quick spreadsheet access.
+- **SQLite alternative**: set `STORAGE_BACKEND=sqlite` for stronger durability guarantees.
+- **Timestamp validation**: server rejects events whose client timestamp drifts more than `TIMESTAMP_TOLERANCE_SECONDS` from server time, catching stale replays.
+
+## Analysis
 
 ```bash
 python analysis/analyze_events.py
 ```
-
-## Recommended Next Build Step
-
-- Add a richer multi-trial task instead of a single recommendation.
-- Move cue config to researcher-editable task definitions.
-- Replace the standard-library server with a framework-backed app only if experiment scope expands.
