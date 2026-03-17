@@ -8,13 +8,13 @@ from pathlib import Path
 
 import pytest
 
-from storage.atomic_logger import AtomicLogger
-from storage.file_store import FileStore
+from trustlab.storage.atomic_event_logger import AtomicEventLogger
+from trustlab.storage.file_event_store import FileEventStore
 
 
 class TestConcurrentFileStore:
     def test_no_data_loss_under_concurrency(self, tmp_path: Path):
-        store = FileStore(tmp_path / "events.jsonl", tmp_path / "events.csv")
+        store = FileEventStore(tmp_path / "events.jsonl", tmp_path / "events.csv")
         n_threads = 10
         n_events = 50
 
@@ -39,12 +39,13 @@ class TestConcurrentFileStore:
         assert len(events) == n_threads * n_events
 
     def test_jsonl_lines_are_valid(self, tmp_path: Path):
-        store = FileStore(tmp_path / "events.jsonl", tmp_path / "events.csv")
+        store = FileEventStore(tmp_path / "events.jsonl", tmp_path / "events.csv")
         n = 100
         for i in range(n):
             store.append({"participant_id": f"P-{i:08X}", "decision": "reject"})
 
         jsonl_path = tmp_path / "events.jsonl"
+        store.flush()
         lines = jsonl_path.read_text().strip().split("\n")
         assert len(lines) == n
         for line in lines:
@@ -52,7 +53,7 @@ class TestConcurrentFileStore:
             assert "participant_id" in obj
 
     def test_csv_has_single_header_under_concurrency(self, tmp_path: Path):
-        store = FileStore(tmp_path / "events.jsonl", tmp_path / "events.csv")
+        store = FileEventStore(tmp_path / "events.jsonl", tmp_path / "events.csv")
         n_threads = 5
 
         def worker(tid: int) -> None:
@@ -65,11 +66,12 @@ class TestConcurrentFileStore:
         for t in threads:
             t.join()
 
+        store.flush()
         csv_content = (tmp_path / "events.csv").read_text()
         assert csv_content.count("participant_id") == 1
 
     def test_event_count_matches_append_calls(self, tmp_path: Path):
-        store = FileStore(tmp_path / "events.jsonl", tmp_path / "events.csv")
+        store = FileEventStore(tmp_path / "events.jsonl", tmp_path / "events.csv")
         n = 42
         for i in range(n):
             store.append({"participant_id": f"P-{i:08X}", "decision": "accept"})

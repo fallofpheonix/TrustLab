@@ -11,13 +11,13 @@ from pathlib import Path
 
 import pytest
 
-from config import Config
-from server.app import AppContext, build_handler
-from server.middleware.metrics import MetricsTracker
-from server.middleware.rate_limit import RateLimiter
-from services.assignment_service import AssignmentService
-from services.session_service import SessionService
-from storage.file_store import FileStore
+from trustlab.api.context import AppContext
+from trustlab.api.handler import create_request_handler
+from trustlab.api.middleware.metrics import RequestMetrics
+from trustlab.api.middleware.rate_limit import RequestRateLimiter
+from trustlab.services.assignment import ConditionAssignmentService
+from trustlab.services.sessions import SessionRegistry
+from trustlab.storage.file_event_store import FileEventStore
 from http.server import ThreadingHTTPServer
 
 
@@ -44,19 +44,20 @@ CONDITIONS = [
 @pytest.fixture(scope="module")
 def server(tmp_path_factory):
     data_dir = tmp_path_factory.mktemp("data")
-    store = FileStore(data_dir / "events.jsonl", data_dir / "events.csv")
-    assignment_svc = AssignmentService(CONDITIONS)
+    store = FileEventStore(data_dir / "events.jsonl", data_dir / "events.csv")
+    assignment_svc = ConditionAssignmentService(CONDITIONS)
     ctx = AppContext(
         web_root=Path(__file__).resolve().parents[2] / "web",
         conditions=CONDITIONS,
         condition_map={str(c["id"]): c for c in CONDITIONS},
         store=store,
         assignment_service=assignment_svc,
-        session_service=SessionService(),
-        rate_limiter=RateLimiter(max_requests=1000, window_seconds=60),
-        metrics=MetricsTracker(),
+        session_registry=SessionRegistry(),
+        rate_limiter=RequestRateLimiter(max_requests=1000, window_seconds=60),
+        metrics=RequestMetrics(),
+        cors_allow_origin="*",
     )
-    handler = build_handler(ctx)
+    handler = create_request_handler(ctx)
     httpd = ThreadingHTTPServer(("127.0.0.1", 0), handler)
     port = httpd.server_address[1]
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
@@ -145,7 +146,7 @@ class TestEventsEndpoint:
     def test_valid_event_accepted(self, server):
         port, _, assignment_svc = server
         pid = "P-AAAAAAAA"
-        condition = assignment_svc.assign(pid)
+        condition = assignment_svc.resolve(pid)
         status, body = _post(port, "/api/events", _valid_event(pid, condition["id"]))
         assert status == 200
         assert body["status"] == "ok"
@@ -159,7 +160,7 @@ class TestEventsEndpoint:
     def test_wrong_condition_assignment(self, server):
         port, _, assignment_svc = server
         pid = "P-AAAAAAAA"
-        condition = assignment_svc.assign(pid)
+        condition = assignment_svc.resolve(pid)
         wrong_cid = "B" if condition["id"] == "A" else "A"
         status, body = _post(port, "/api/events", _valid_event(pid, wrong_cid))
         assert status == 400
@@ -168,7 +169,7 @@ class TestEventsEndpoint:
     def test_missing_field_rejected(self, server):
         port, _, assignment_svc = server
         pid = "P-AAAAAAAA"
-        event = _valid_event(pid, assignment_svc.assign(pid)["id"])
+        event = _valid_event(pid, assignment_svc.resolve(pid)["id"])
         del event["decision"]
         status, body = _post(port, "/api/events", event)
         assert status == 400
@@ -176,7 +177,7 @@ class TestEventsEndpoint:
     def test_invalid_decision_rejected(self, server):
         port, _, assignment_svc = server
         pid = "P-AAAAAAAA"
-        event = _valid_event(pid, assignment_svc.assign(pid)["id"])
+        event = _valid_event(pid, assignment_svc.resolve(pid)["id"])
         event["decision"] = "maybe"
         status, body = _post(port, "/api/events", event)
         assert status == 400
@@ -195,7 +196,7 @@ class TestEventsEndpoint:
         port, store, assignment_svc = server
         before = store.event_count()
         pid = "P-BBBBBBBB"
-        cid = assignment_svc.assign(pid)["id"]
+        cid = assignment_svc.resolve(pid)["id"]
         _post(port, "/api/events", _valid_event(pid, cid))
         assert store.event_count() == before + 1
 
