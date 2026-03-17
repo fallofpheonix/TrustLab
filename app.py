@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
+import os
 import sys
+from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -10,7 +11,7 @@ SRC_ROOT = PROJECT_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-from trust_server import run_server
+from trustlab.app import run_http_server
 
 
 def parse_args() -> argparse.Namespace:
@@ -23,7 +24,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    run_server(host=args.host, port=args.port, data_dir=Path(args.data_dir).resolve())
+    os.environ["DATA_DIR"] = str(Path(args.data_dir).resolve())
+    run_http_server(host=args.host, port=args.port)
 
 
 if __name__ == "__main__":
