@@ -1,0 +1,159 @@
+:root {
+  --bg: #f4efe8;
+  --panel: #fffaf3;
+  --ink: #1b1e24;
+  --muted: #5f6773;
+  --accent: #0d6b6f;
+  --accent-dark: #084d50;
+  --line: #d9cdbd;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(13, 107, 111, 0.12), transparent 30%),
+    linear-gradient(180deg, #efe8dd 0%, var(--bg) 100%);
+  min-height: 100vh;
+}
+
+.shell {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 40px 20px 56px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 40px rgba(32, 28, 20, 0.08);
+  border-radius: 24px;
+  padding: 28px;
+}
+
+.panel + .panel {
+  margin-top: 20px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+h1, h2, p {
+  margin-top: 0;
+}
+
+.lede {
+  color: var(--muted);
+  max-width: 60ch;
+}
+
+.meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.pill {
+  display: inline-flex;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(13, 107, 111, 0.08);
+  color: var(--accent-dark);
+  font-size: 13px;
+}
+
+.agent-card {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(247,241,232,0.95));
+}
+
+.agent-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.agent-name {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.agent-tone {
+  color: var(--muted);
+}
+
+.recommendation-box {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(13, 107, 111, 0.08);
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+button {
+  border: 0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.primary {
+  background: var(--accent);
+  color: white;
+}
+
+.secondary {
+  background: #e7ddd0;
+  color: var(--ink);
+}
+
+.status {
+  margin-top: 18px;
+  min-height: 24px;
+  color: var(--muted);
+}
+
+.status[data-state="error"] {
+  color: #9d2c2c;
+}
+
+@media (max-width: 640px) {
+  .shell {
+    padding: 20px 14px 36px;
+  }
+
+  .panel {
+    padding: 20px;
+    border-radius: 18px;
+  }
+}

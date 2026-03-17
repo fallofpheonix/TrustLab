@@ -1,0 +1,5 @@
+# No third-party runtime dependencies — stdlib only.
+
+# Dev / test
+pytest>=7.0
+ruff>=0.4
