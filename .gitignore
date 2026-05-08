@@ -88,5 +88,3 @@ models/**/*.bin
 *.so
 *.dylib
 *.exe
-bench/bench_*
-tests/test_*
